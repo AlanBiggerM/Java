@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd">
+    <!--配置AccountService-->
+    <bean id="accountService" class="com.alan.service.impl.AccountServiceImpl">
+        <property name="accountDao" ref="accountDao"></property>
+    </bean>
+    <!--配置accountDao-->
+    <bean id="accountDao" class="com.alan.dao.impl.AccountImpl">
+        <property name="connectionUtils" ref="connectionUtils"></property>
+        <property name="runner" ref="runner"></property>
+    </bean>
+    <!--配置runner-->
+    <bean id="runner" class="org.apache.commons.dbutils.QueryRunner" scope="prototype"></bean>
+
+    <!--配置beanFactory代理工厂-->
+    <bean id="beanFactory" class="com.alan.factory.beanFactory">
+        <property name="accountService" ref="accountService"></property>
+        <property name="txManager" ref="txManager"></property>
+    </bean>
+    <!--配置txManager事务管理器-->
+    <bean id="txManager" class="com.alan.utils.TransactionManager">
+        <property name="connectionUtils" ref="connectionUtils"></property>
+    </bean>
+    <!--配置connectionUtils连接工具-->
+    <bean id="connectionUtils" class="com.alan.utils.ConnectionUtils">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+    <!--配置dataSource数据源-->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="com.mysql.jdbc.Driver"></property>
+        <property name="jdbcUrl" value="jdbc:mysql://localhost:3306/db03"></property>
+        <property name="user" value="root"></property>
+        <property name="password" value="xiaoyahuan1997"></property>
+    </bean>
+    <!--配置切面-->
+    <aop:config>
+        <!--ref引用切面类-->
+        <aop:aspect id="beanAdvice" ref="beanFactory">
+            <aop:around method="aroundPrintLog" pointcut-ref="pt1"></aop:around>
+            <aop:pointcut id="pt1" expression="execution(* com.alan.service.impl.AccountServiceImpl.*(..))"></aop:pointcut>
+        </aop:aspect>
+    </aop:config>
+</beans>
